@@ -15,7 +15,7 @@ pipeline {
             acc_ID = '135808959960'
             project = configMap.get("project")
             environment = 'prod'
-            component = 'component'
+            component = 'frontend'
         }
 
     stages {
