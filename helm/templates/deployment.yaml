@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
-  namespace: roboshop
+  namespace: rnk-roboshop
   labels: # these labels are deployment labels
     app: frontend
     project: roboshop

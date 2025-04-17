@@ -1,28 +1,31 @@
 pipeline {
     agent {
-        label 'AGENT-1'
+        label 'agent-2-label'
     }
     options{
         timeout(time: 30, unit: 'MINUTES')
         disableConcurrentBuilds()
         //retry(1)
     }
+    
     environment {
-        appVersion = '' // this will become global, we can use across pipeline
-        region = 'us-east-1'
-        account_id = '315069654700'
-        project = 'roboshop'
-        environment = 'dev'
-        component = 'frontend'
-    }
+            DEBUG = 'true'
+            appversion = ''
+            region = 'us-east-1'
+            acc_ID = '135808959960'
+            project = configMap.get("project")
+            environment = 'prod'
+            component = configMap.get("component")
+
+        }
 
     stages {
         stage('Read the version') {
             steps {
                 script{
                     def packageJson = readJSON file: 'package.json'
-                    appVersion = packageJson.version
-                    echo "App version: ${appVersion}"
+                    appversion = packageJson.version
+                    echo "App version: ${appversion}"
                 }
             }
         }
@@ -30,14 +33,15 @@ pipeline {
             
             steps {
                 withAWS(region: 'us-east-1', credentials: "aws-creds-${environment}") {
-                    sh """
-                    aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${account_id}.dkr.ecr.us-east-1.amazonaws.com
+                    sh """                   
+                        aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${acc_ID}.dkr.ecr.${region}.amazonaws.com
 
-                    docker build -t ${account_id}.dkr.ecr.us-east-1.amazonaws.com/${project}/${environment}/${component}:${appVersion} .
+                        docker build -t ${acc_ID}.dkr.ecr.${region}.amazonaws.com/kdp-${project}-${environment}/${component}:${appversion} .
 
-                    docker images
+                        docker images
 
-                    docker push ${account_id}.dkr.ecr.us-east-1.amazonaws.com/${project}/${environment}/${component}:${appVersion}
+                        docker push ${acc_ID}.dkr.ecr.${region}.amazonaws.com/kdp-${project}-${environment}/${component}:${appversion}                 
+
                     """
                 }
             }
@@ -46,10 +50,10 @@ pipeline {
             steps{
                 withAWS(region: 'us-east-1', credentials: "aws-creds-${environment}") {
                     sh """
-                        aws eks update-kubeconfig --region ${region} --name ${project}-${environment}
+                        aws eks update-kubeconfig --region ${region} --name kdp-${project}-${environment}-eks
                         cd helm
                         sed -i 's/IMAGE_VERSION/${appVersion}/g' values-${environment}.yaml
-                        helm upgrade --install ${component} -n ${project} -f values-${environment}.yaml .
+                        helm upgrade --install ${component} -n rnk-${project} -f values-${environment}.yaml .
                     """
                 }
             }

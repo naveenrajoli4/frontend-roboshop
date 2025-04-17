@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: frontend
-  namespace: roboshop
+  namespace: rnk-roboshop
 data:
   nginx.conf: |
     user www-data;
