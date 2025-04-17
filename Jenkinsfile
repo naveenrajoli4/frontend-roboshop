@@ -13,7 +13,7 @@ pipeline {
             appversion = ''
             region = 'us-east-1'
             acc_ID = '135808959960'
-            project = configMap.get("project")
+            project = 'roboshop'
             environment = 'prod'
             component = 'frontend'
         }
